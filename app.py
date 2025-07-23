@@ -1,35 +1,23 @@
 from flask import Flask, render_template, request, jsonify
 from pymongo import MongoClient
 from flask_cors import CORS
-import os
-from dotenv import load_dotenv
 import datetime
-import urllib.parse
-
-# Load environment variables
-load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# MongoDB Atlas connection with proper password encoding
-username = "konerupoojasree"
-password = "Kps@2006"  # In production, never hardcode credentials - use environment variables
-cluster_url = "cluster0.duqmiwe.mongodb.net"
-database_name = "portfolio_db"  # You can change this to your preferred database name
+# Local MongoDB configuration
+MONGO_HOST = "localhost"
+MONGO_PORT = 27017  # Default MongoDB port
+DATABASE_NAME = "portfolio_db"
+COLLECTION_NAME = "contacts"
 
-# Properly encode the password
-encoded_password = urllib.parse.quote_plus(password)
-
-# Create the MongoDB URI
-mongo_uri = f"mongodb+srv://{username}:{encoded_password}@{cluster_url}/{database_name}?retryWrites=true&w=majority"
-
-# Connect to MongoDB
+# Connect to local MongoDB
 try:
-    client = MongoClient(mongo_uri)
-    db = client[database_name]
-    contacts_collection = db['contacts']
-    print("Successfully connected to MongoDB Atlas!")
+    client = MongoClient(host=MONGO_HOST, port=MONGO_PORT)
+    db = client[DATABASE_NAME]
+    contacts_collection = db[COLLECTION_NAME]
+    print("Successfully connected to local MongoDB!")
 except Exception as e:
     print(f"Error connecting to MongoDB: {e}")
 
@@ -42,7 +30,6 @@ def submit_form():
     try:
         data = request.get_json()
         
-        # Insert the form data into MongoDB
         contacts_collection.insert_one({
             'name': data['name'],
             'email': data['email'],
